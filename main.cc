@@ -3,8 +3,12 @@
 #include <regex>
 #include <algorithm>
 #include <iterator>
+#define GLM_FORCE_RADIANS
+#include <glm/vec3.hpp>
 
 using namespace std;
+using namespace glm;
+
 
 struct gtoken {
   char type;
@@ -21,15 +25,83 @@ struct gtoken {
   }
 };
 
-struct State {
-  double x,y,z,e;
-  State() : x(0), y(0), z(0), e(0) { }
-  State(const State& o) : x(o.x), y(o.y), z(o.z), e(0) {}
-  const bool operator==(const State& other) const { 
-    return other.x == x && other.y == y && other.z == z && other.e == e; 
+enum Units { mm, inches };
+using segment = vector<vec3>;
+
+struct StateMachine {
+  vec3 pos;
+  bool absolute;
+  Units units;
+  vector<segment> segments;
+  
+  StateMachine() : pos(0), absolute(false), units(mm) {
+    segments.emplace_back(segment());
   }
-  const bool operator!=(const State& other) const { 
-    return ! (other == *this);
+  // interpret a line of tokens
+  void handleTokens(vector<gtoken> tokens) {
+    auto nextPos(pos);
+    bool extruding = false;
+    for(auto t : tokens) {
+      switch (t.type) {
+      case 'M':
+      case 'F':
+      case 'T':
+      case 'S':
+	// ignore we are only interested in moves
+	break;
+      case 'G':
+	// check for go home, set mm/inches etc for now just chuck along
+	// if ( t.ival == 1 || t.ival == 0 ) {
+	  
+	// } else {
+	  
+	// }
+	if (t.ival == 20) {
+	  units = inches;
+	} else if (t.ival == 21) {
+	  units = mm;
+	} else if (t.ival == 90) {
+	  absolute = true;
+	} else if (t.ival == 91) {
+	  absolute = false;
+	} 
+	break;
+      case 'X':
+	nextPos.x = t.fval + (absolute? 0.0f : pos.x);
+	break;
+      case 'Y':
+	nextPos.y = t.fval + (absolute? 0.0f : pos.y);
+	break;
+      case 'Z':
+	nextPos.z = t.fval + (absolute? 0.0f : pos.z);
+	break;
+      case 'E':
+	extruding = t.fval > 0;
+	break;
+
+      }
+      //      cout << t << endl;
+    }
+    if (nextPos != pos) {
+      pos = nextPos;
+      if (extruding) {
+	cout << nextPos.x  << ", " << nextPos.y << ", " <<  nextPos.z << endl;
+	addPosToCurrentSegment();
+      } else {
+	startNewSegment();
+      }
+    }
+  }
+  // add another segment iff the current is nonempty 
+  void startNewSegment() {
+    assert(!segments.empty());
+    if(!segments.back().empty()) {
+      segments.emplace_back(segment());
+    } 
+  }
+  void addPosToCurrentSegment() {
+    assert(!segments.empty());
+    segments.back().emplace_back(pos);
   }
 };
 
@@ -61,58 +133,15 @@ vector<gtoken> tokenize(string line) {
 
 int main(int argc, char *argv[]) {
   string line;
-  State state;
+  StateMachine sm;
   while(getline(cin, line)) {
     removeComments(line);
     auto tokens = tokenize(line);
-    auto nextState(state);
-    for(auto t : tokens) {
-      switch (t.type) {
-      case 'M':
-      case 'F':
-      case 'T':
-      case 'S':
-	// ignore we are only interested in moves
-	break;
-      case 'G':
-	// check for go home, set mm/inches etc for now just chuck along
-	// if ( t.ival == 1 || t.ival == 0 ) {
-	  
-	// } else {
-	  
-	// }
-	if (t.ival == 90) {
-	  //absolute
-	} else if (t.ival == 91) {
-	  //relative
-	} else if (t.ival == 92) {
-	  // set cur as 0
-	}
-	break;
-      case 'X':
-	nextState.x += t.fval;
-	break;
-      case 'Y':
-	nextState.y += t.fval;
-	break;
-      case 'Z':
-	nextState.z += t.fval;
-	break;
-      case 'E':
-	nextState.e += t.fval;
-	break;
-
-      }
-      //      cout << t << endl;
-    }
-    if (nextState != state) {
-      if (nextState.e  >0) {
-	cout << nextState.x  << ", " << nextState.y << ", " <<  nextState.z << endl;
-      }
-      state = nextState;
-    }
-
-
+    sm.handleTokens(tokens);
   }
+  for(auto s: sm.segments) {
+    cout << s.size() << endl;
+  }
+
   return 0;
 }
