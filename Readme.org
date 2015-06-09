@@ -1,0 +1,4 @@
+Yet another gcode parser thingy
+
+primary aim: to visualize basic 3d printer gcode.
+secondary aim : play around with c+x/y/z features
