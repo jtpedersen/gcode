@@ -106,6 +106,9 @@ public:
   Observer(Qt3DCore::QEntity *root) : root(root){};
   virtual void newSegment(Segment s) override {
     // root add new segment
+    for(const auto &v: s) {
+      std::cout << v.x << std::endl;
+    }
   }
 private:
   Qt3DCore::QEntity *root;

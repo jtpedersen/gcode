@@ -1,7 +1,7 @@
 #ifndef GCODEPARSER_H_
 #define GCODEPARSER_H_
-#include <vector>
 #include <memory>
+#include <vector>
 
 #define GLM_FORCE_RADIANS
 #include <glm/vec3.hpp>
@@ -27,9 +27,31 @@ public:
 private:
   /// notify observes on new Segment
   void newSegment(Segment s);
+
+  struct gtoken {
+    char type;
+    union {
+      int ival;
+      double fval;
+    };
+    gtoken(char type, int ival);
+    gtoken(char type, double fval);
+    static bool integerType(char type);
+    friend std::ostream &operator<<(std::ostream &os, const gtoken &g);
+  };
+  std::vector<gtoken> tokenize(std::string line);
+  void handleTokens(std::vector<gtoken> tokens);
+  void startNewSegment();
+  void addPosToCurrentSegment();
+
+
   std::string filename;
   std::vector<std::shared_ptr<SegmentObserver>> observers;
-};
 
+  glm::vec3 pos;
+  bool absolute;
+  Units units;
+  Segment current;
+};
 
 #endif /* !GCODEPARSER_H_ */
