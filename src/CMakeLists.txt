@@ -11,6 +11,9 @@ add_executable(
   main.cpp
   OrbitTransformController.h
   OrbitTransformController.cpp
+
+  GCodeParser.h
+  GCodeParser.cpp
   )
 
 target_link_libraries(

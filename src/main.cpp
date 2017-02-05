@@ -69,7 +69,9 @@
 
 #include <QPropertyAnimation>
 
-#include "OrbitTransformController.h"
+// #include "OrbitTransformController.h"
+#include "GCodeParser.h"
+#include <iostream>
 
 Qt3DCore::QEntity *createScene() {
   // Root entity
@@ -95,39 +97,35 @@ Qt3DCore::QEntity *createScene() {
   torusEntity->addComponent(torusTransform);
   torusEntity->addComponent(material);
 
-  // Sphere
-  Qt3DCore::QEntity *sphereEntity = new Qt3DCore::QEntity(rootEntity);
-  Qt3DExtras::QSphereMesh *sphereMesh = new Qt3DExtras::QSphereMesh;
-  sphereMesh->setRadius(3);
-
-  Qt3DCore::QTransform *sphereTransform = new Qt3DCore::QTransform;
-  OrbitTransformController *controller =
-      new OrbitTransformController(sphereTransform);
-  controller->setTarget(sphereTransform);
-  controller->setRadius(20.0f);
-
-  QPropertyAnimation *sphereRotateTransformAnimation =
-      new QPropertyAnimation(sphereTransform);
-  sphereRotateTransformAnimation->setTargetObject(controller);
-  sphereRotateTransformAnimation->setPropertyName("angle");
-  sphereRotateTransformAnimation->setStartValue(QVariant::fromValue(0));
-  sphereRotateTransformAnimation->setEndValue(QVariant::fromValue(360));
-  sphereRotateTransformAnimation->setDuration(10000);
-  sphereRotateTransformAnimation->setLoopCount(-1);
-  sphereRotateTransformAnimation->start();
-
-  sphereEntity->addComponent(sphereMesh);
-  sphereEntity->addComponent(sphereTransform);
-  sphereEntity->addComponent(material);
-
   return rootEntity;
 }
 
+struct Observer : public SegmentObserver {
+
+public:
+  Observer(Qt3DCore::QEntity *root) : root(root){};
+  virtual void newSegment(Segment s) override {
+    // root add new segment
+  }
+private:
+  Qt3DCore::QEntity *root;
+};
+
 int main(int argc, char *argv[]) {
   QGuiApplication app(argc, argv);
+
+  if (argc < 2) {
+    std::cout << "Usage " << argv[0] << " gcode-file" << std::endl;
+    exit(-1);
+  }
+
+  GCodeParser gcp(argv[1]);
+
   Qt3DExtras::Qt3DWindow view;
 
   Qt3DCore::QEntity *scene = createScene();
+
+  gcp.addObserver(std::make_shared<Observer>(scene));
 
   // Camera
   Qt3DRender::QCamera *camera = view.camera();
@@ -144,6 +142,8 @@ int main(int argc, char *argv[]) {
 
   view.setRootEntity(scene);
   view.show();
+
+  gcp.run();
 
   return app.exec();
 }
