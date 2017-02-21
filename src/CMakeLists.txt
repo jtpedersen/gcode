@@ -9,11 +9,13 @@
 add_executable(
   main
   main.cpp
-  OrbitTransformController.h
-  OrbitTransformController.cpp
 
   GCodeParser.h
   GCodeParser.cpp
+
+  PathWindow.h
+  PathWindow.cpp
+
   )
 
 target_link_libraries(
