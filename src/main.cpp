@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
   GCodeParser gcp(argv[1]);
   gcp.addObserver(std::make_shared<Observer>(pw));
 
-  gcp.run();
+
 
   QMainWindow window;
   window.setWindowTitle("Gcode-o-tron");
@@ -52,5 +52,6 @@ int main(int argc, char *argv[]) {
   window.resize(800, 800);
   window.show();
 
+  gcp.run();
   return app.exec();
 }

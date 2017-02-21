@@ -16,7 +16,7 @@ void PathWindow::addSegment(const Segment &s) {
   for (const auto v : s) {
     data.emplace_back(v.x);
     data.emplace_back(v.y);
-    data.emplace_back(v.x);
+    data.emplace_back(v.z);
   }
 }
 
@@ -176,17 +176,18 @@ void PathWindow::initializeGL() {
 }
 
 void PathWindow::setupVertexAttribs() {
-
+  qDebug() << "setupVertexAttribs";
   pathVbo.bind();
   pathVbo.allocate(data.data(), vertexCount * sizeof(GLfloat));
 
   QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
   f->glEnableVertexAttribArray(0);
-  f->glEnableVertexAttribArray(1);
-  f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), 0);
-  f->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat),
-                           reinterpret_cast<void *>(3 * sizeof(GLfloat)));
+  //  f->glEnableVertexAttribArray(1);
+  f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), 0);
+  // f->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat),
+  //                          reinterpret_cast<void *>(3 * sizeof(GLfloat)));
   pathVbo.release();
+  dirty = false;
 }
 
 void PathWindow::paintGL() {
@@ -201,7 +202,7 @@ void PathWindow::paintGL() {
   m_world.rotate(180.0f - (m_xRot / 16.0f), 1, 0, 0);
   m_world.rotate(m_yRot / 16.0f, 0, 1, 0);
   m_world.rotate(m_zRot / 16.0f, 0, 0, 1);
-  m_world.scale(.1);
+  m_world.scale(.01);
 
   QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
   m_program->bind();
@@ -210,7 +211,11 @@ void PathWindow::paintGL() {
   QMatrix3x3 normalMatrix = m_world.normalMatrix();
   m_program->setUniformValue(m_normalMatrixLoc, normalMatrix);
 
-  glDrawArrays(GL_LINES, 0, vertexCount);
+  int offset = 0;
+  for (const auto cnt : counts) {
+    glDrawArrays(GL_LINES, offset, cnt);
+    offset += cnt;
+  }
 
   m_program->release();
 }
