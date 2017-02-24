@@ -1,7 +1,13 @@
 #include "PathWindow.h"
 
 #include <QMouseEvent>
+#include <QMutex>
+#include <QMutexLocker>
 #include <QOpenGLShaderProgram>
+
+namespace {
+QMutex segmentMutex;
+}
 
 PathWindow::PathWindow(QWidget *parent)
     : QOpenGLWidget(parent), m_xRot(0), m_yRot(0), m_zRot(0), m_program(0) {}
@@ -9,6 +15,7 @@ PathWindow::PathWindow(QWidget *parent)
 PathWindow::~PathWindow() {}
 
 void PathWindow::addSegment(const Segment &s) {
+  QMutexLocker lock(&segmentMutex);
   dirty = true;
   segments.emplace_back(s);
   counts.emplace_back(s.size());
@@ -20,8 +27,7 @@ void PathWindow::addSegment(const Segment &s) {
   }
 }
 
-void PathWindow::clear()
-{
+void PathWindow::clear() {
   dirty = true;
   segments.clear();
   counts.clear();
@@ -184,7 +190,8 @@ void PathWindow::initializeGL() {
 }
 
 void PathWindow::setupVertexAttribs() {
-  qDebug() << "setupVertexAttribs";
+  qDebug() << "setupVertexAttribs" << vertexCount;
+  QMutexLocker lock(&segmentMutex);
   pathVbo.bind();
   pathVbo.allocate(data.data(), vertexCount * sizeof(GLfloat));
 
