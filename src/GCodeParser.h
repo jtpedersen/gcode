@@ -37,6 +37,7 @@ private:
     gtoken(char type, int ival);
     gtoken(char type, double fval);
     static bool integerType(char type);
+    static bool floatType(char type);
     friend std::ostream &operator<<(std::ostream &os, const gtoken &g);
   };
   std::vector<gtoken> tokenize(std::string line);

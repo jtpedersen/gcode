@@ -19,11 +19,11 @@ GCodeParser::gtoken::gtoken(char type, double fval) : type(type), fval(fval){};
 bool GCodeParser::gtoken::integerType(char type) {
   return 'G' == type || 'M' == type || 'T' == type;
 }
-// ostream &GCodeParser::gtoken::operator<<(ostream &os, const
-// GCodeParser::gtoken &g) {
-//   os << g.type << (integerType(g.type) ? g.ival : g.fval);
-//   return os;
-// }
+
+bool GCodeParser::gtoken::floatType(char type) {
+  return 'A' == type || 'X' == type || 'Y' == type || 'Z' == type ||
+         'F' == type || 'E' == type;
+}
 
 // interpret a line of tokens
 void GCodeParser::handleTokens(vector<gtoken> tokens) {
@@ -72,7 +72,7 @@ void GCodeParser::handleTokens(vector<gtoken> tokens) {
   if (nextPos != pos) {
     pos = nextPos;
     if (extruding) {
-      // cout << nextPos.x << ", " << nextPos.y << ", " << nextPos.z << endl;
+      //      cout << nextPos.x << ", " << nextPos.y << ", " << nextPos.z << endl;
       addPosToCurrentSegment();
     } else {
       startNewSegment();
@@ -104,10 +104,16 @@ vector<GCodeParser::gtoken> GCodeParser::tokenize(string line) {
   for (auto it = begin; it != end; it++) {
     string match = *it;
     char type = match[0];
+    std::string number(match.substr(1));
+
     if (GCodeParser::gtoken::integerType(type)) {
-      tokens.emplace_back(type, atoi(match.c_str() + 1));
+      tokens.emplace_back(type, std::stoi(number));
+      //cout << match <<" Integer as " << tokens.back().ival << std::endl;
+    } else if (GCodeParser::gtoken::floatType(type)) {
+      tokens.emplace_back(type, std::stod(number));
+      //cout << match <<" Float " << tokens.back().fval << std::endl;
     } else {
-      tokens.emplace_back(type, atof(match.c_str() + 1));
+      //cout << "ignored: " << match;
     }
   }
   return tokens;
