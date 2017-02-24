@@ -6,12 +6,7 @@
 
 int main(int argc, char *argv[]) {
   QApplication app(argc, argv);
-
-  if (argc < 2) {
-    std::cout << "Usage " << argv[0] << " gcode-file" << std::endl;
-    exit(-1);
-  }
-
+  std::setlocale(LC_NUMERIC, "en_US");
   QSurfaceFormat format;
   format.setDepthBufferSize(24);
   format.setStencilBufferSize(8);
