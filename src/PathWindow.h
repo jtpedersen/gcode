@@ -73,6 +73,7 @@ public:
   QSize sizeHint() const override;
 
   void addSegment(const Segment &s);
+  void clear();
 
 public slots:
   void setXRotation(int angle);

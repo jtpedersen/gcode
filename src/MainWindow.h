@@ -17,6 +17,8 @@ public:
   virtual void newSegment(Segment s) override;
 
 private:
+  void loadFile(const QString &);
+
   PathWindow *pathWindow;
   QToolBar *toolBar;
   std::unique_ptr<GCodeParser> parser;

@@ -3,6 +3,8 @@
 
 #include <QAction>
 #include <QDir>
+#include <QFileDialog>
+#include <QStandardPaths>
 #include <QToolBar>
 #include <iostream>
 
@@ -18,26 +20,26 @@ MainWindow::MainWindow() {
 
   resize(800, 800);
 
-  QDir path("/home/jacob/Downloads");
-  parser = std::make_unique<GCodeParser>(
-      path.absoluteFilePath("150-DIAMOND_TREE.gcode").toStdString());
-
-  parser->addObserver(this);
-
   connect(startAction, &QAction::triggered, this, [this]() {
-    if (parser)
-      parser->run();
+    const auto folder =
+        QStandardPaths::standardLocations(QStandardPaths::DownloadLocation)[0];
+    const auto fn = QFileDialog::getOpenFileName(
+        this, tr("Open GCode"), folder, tr("Gcode Files (*.ngc *.nc *.gcode)"));
+    loadFile(fn);
   });
 }
 
 MainWindow::~MainWindow() { // i enable forward declared unique_ptrs from header
 }
 
+void MainWindow::loadFile(const QString &path) {
+  pathWindow->clear();
+  parser = std::make_unique<GCodeParser>(path.toStdString());
+  parser->addObserver(this);
+  parser->run();
+}
+
 void MainWindow::newSegment(Segment s) {
-  // root add new segment
-  // for (const auto &v : s) {
-  //   std::cout << v.x << std::endl;
-  // }
   static int segcount = 0;
   segcount++;
   setWindowTitle(QString("Segments: %1").arg(segcount));

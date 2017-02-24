@@ -20,6 +20,14 @@ void PathWindow::addSegment(const Segment &s) {
   }
 }
 
+void PathWindow::clear()
+{
+  dirty = true;
+  segments.clear();
+  counts.clear();
+  vertexCount = 0;
+}
+
 QSize PathWindow::minimumSizeHint() const { return QSize(50, 50); }
 
 QSize PathWindow::sizeHint() const { return QSize(400, 400); }
