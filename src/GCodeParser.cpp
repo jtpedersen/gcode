@@ -85,9 +85,7 @@ void GCodeParser::startNewSegment() {
   current.clear();
 }
 
-void GCodeParser::addPosToCurrentSegment() {
-  current.emplace_back(pos);
-}
+void GCodeParser::addPosToCurrentSegment() { current.emplace_back(pos); }
 
 void removeComments(string &line) {
   auto sep = line.find(";");
@@ -128,9 +126,7 @@ void GCodeParser::run() {
   }
 }
 
-void GCodeParser::addObserver(std::shared_ptr<SegmentObserver> so) {
-  observers.push_back(so);
-}
+void GCodeParser::addObserver(SegmentObserver *so) { observers.push_back(so); }
 
 void GCodeParser::newSegment(Segment s) {
   std::for_each(std::begin(observers), std::end(observers),

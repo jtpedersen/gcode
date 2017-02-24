@@ -22,7 +22,7 @@ public:
   /// start parsing the file
   void run();
 
-  void addObserver(std::shared_ptr<SegmentObserver> so);
+  void addObserver(SegmentObserver *so);
 
 private:
   /// notify observes on new Segment
@@ -46,7 +46,7 @@ private:
 
 
   std::string filename;
-  std::vector<std::shared_ptr<SegmentObserver>> observers;
+  std::vector<SegmentObserver*> observers;
 
   glm::vec3 pos;
   bool absolute;

@@ -16,6 +16,9 @@ add_executable(
   PathWindow.h
   PathWindow.cpp
 
+  MainWindow.h
+  MainWindow.cpp
+
   )
 
 target_link_libraries(
