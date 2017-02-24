@@ -2,6 +2,7 @@
 
 #include <QApplication>
 #include <QSurfaceFormat>
+#include <QVector3D>
 #include <iostream>
 
 int main(int argc, char *argv[]) {
@@ -13,6 +14,8 @@ int main(int argc, char *argv[]) {
   format.setVersion(3, 2);
   format.setProfile(QSurfaceFormat::CoreProfile);
   QSurfaceFormat::setDefaultFormat(format);
+
+  qRegisterMetaType<QList<QVector3D>>();
 
   MainWindow window;
 

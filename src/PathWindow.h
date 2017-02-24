@@ -72,7 +72,6 @@ public:
   QSize minimumSizeHint() const override;
   QSize sizeHint() const override;
 
-  void addSegment(const Segment &s);
   void clear();
 
 public slots:
@@ -80,6 +79,7 @@ public slots:
   void setYRotation(int angle);
   void setZRotation(int angle);
   void cleanup();
+  void addSegment(const QList<QVector3D> &s);
 
 signals:
   void xRotationChanged(int angle);
@@ -118,7 +118,7 @@ private:
   int vertexCount = 0;
 
   bool dirty;
-  std::vector<Segment> segments;
+  std::vector<QList<QVector3D>> segments;
 };
 
 #endif /* !PATHWINDOW_H_ */

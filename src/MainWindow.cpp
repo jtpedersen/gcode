@@ -34,14 +34,10 @@ MainWindow::~MainWindow() { // i enable forward declared unique_ptrs from header
 
 void MainWindow::loadFile(const QString &path) {
   pathWindow->clear();
-  parser = std::make_unique<GCodeParser>(path.toStdString());
-  parser->addObserver(this);
-  parser->run();
-}
-
-void MainWindow::newSegment(Segment s) {
-  static int segcount = 0;
-  segcount++;
-  setWindowTitle(QString("Segments: %1").arg(segcount));
-  pathWindow->addSegment(std::move(s));
+  parser = new GCodeParser(path.toStdString(), this);
+  connect(parser, &GCodeParser::newSegment, pathWindow,
+          &PathWindow::addSegment);
+  connect(parser, &QThread::finished, parser, &QObject::deleteLater);
+  connect(parser, &QThread::finished, this, [this] { pathWindow->update(); });
+  parser->start();
 }

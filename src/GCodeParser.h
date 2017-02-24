@@ -1,33 +1,27 @@
 #ifndef GCODEPARSER_H_
 #define GCODEPARSER_H_
+#include <QThread>
 #include <memory>
 #include <vector>
 
-#define GLM_FORCE_RADIANS
-#include <glm/vec3.hpp>
+#include <QList>
+#include <QVector3D>
 
 enum Units { mm, inches };
-using Segment = std::vector<glm::vec3>;
 
-/// Called with new segments
-struct SegmentObserver {
-  virtual void newSegment(Segment s) = 0;
-};
-
-class GCodeParser {
+class GCodeParser : public QThread {
+  Q_OBJECT
 
 public:
-  GCodeParser(std::string file);
+  GCodeParser(std::string file, QObject *parent =nullptr);
 
   /// start parsing the file
-  void run();
+  void run() override;
 
-  void addObserver(SegmentObserver *so);
+signals:
+  void newSegment(QList<QVector3D>);
 
 private:
-  /// notify observes on new Segment
-  void newSegment(Segment s);
-
   struct gtoken {
     char type;
     union {
@@ -43,16 +37,13 @@ private:
   std::vector<gtoken> tokenize(std::string line);
   void handleTokens(std::vector<gtoken> tokens);
   void startNewSegment();
-  void addPosToCurrentSegment();
-
 
   std::string filename;
-  std::vector<SegmentObserver*> observers;
 
-  glm::vec3 pos;
+  QVector3D pos;
   bool absolute;
   Units units;
-  Segment current;
+  QList<QVector3D> current;
 };
 
 #endif /* !GCODEPARSER_H_ */

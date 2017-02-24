@@ -14,17 +14,18 @@ PathWindow::PathWindow(QWidget *parent)
 
 PathWindow::~PathWindow() {}
 
-void PathWindow::addSegment(const Segment &s) {
+void PathWindow::addSegment(const QList<QVector3D> &s) {
   QMutexLocker lock(&segmentMutex);
   dirty = true;
   segments.emplace_back(s);
   counts.emplace_back(s.size());
   vertexCount += s.size();
   for (const auto v : s) {
-    data.emplace_back(v.x);
-    data.emplace_back(v.y);
-    data.emplace_back(v.z);
+    data.emplace_back(v.x());
+    data.emplace_back(v.y());
+    data.emplace_back(v.z());
   }
+  update();
 }
 
 void PathWindow::clear() {

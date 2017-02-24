@@ -8,11 +8,7 @@
 #include <string>
 #include <utility>
 
-#define GLM_FORCE_RADIANS
-#include <glm/vec3.hpp>
-
 using namespace std;
-using namespace glm;
 
 GCodeParser::gtoken::gtoken(char type, int ival) : type(type), ival(ival){};
 GCodeParser::gtoken::gtoken(char type, double fval) : type(type), fval(fval){};
@@ -55,13 +51,13 @@ void GCodeParser::handleTokens(vector<gtoken> tokens) {
       }
       break;
     case 'X':
-      nextPos.x = t.fval + (absolute ? 0.0f : pos.x);
+      nextPos.setX(t.fval + (absolute ? 0.0f : pos.x()));
       break;
     case 'Y':
-      nextPos.y = t.fval + (absolute ? 0.0f : pos.y);
+      nextPos.setY(t.fval + (absolute ? 0.0f : pos.y()));
       break;
     case 'Z':
-      nextPos.z = t.fval + (absolute ? 0.0f : pos.z);
+      nextPos.setZ(t.fval + (absolute ? 0.0f : pos.z()));
       break;
     case 'E':
       extruding = t.fval > 0;
@@ -72,8 +68,11 @@ void GCodeParser::handleTokens(vector<gtoken> tokens) {
   if (nextPos != pos) {
     pos = nextPos;
     if (extruding) {
-      //      cout << nextPos.x << ", " << nextPos.y << ", " << nextPos.z << endl;
-      addPosToCurrentSegment();
+      //      cout << nextPos.x() << ", " << nextPos.y() << ", " << nextPos.z()
+      //      <<
+      //      endl;
+      current << pos;
+
     } else {
       startNewSegment();
     }
@@ -84,8 +83,6 @@ void GCodeParser::startNewSegment() {
   newSegment(current);
   current.clear();
 }
-
-void GCodeParser::addPosToCurrentSegment() { current.emplace_back(pos); }
 
 void removeComments(string &line) {
   auto sep = line.find(";");
@@ -108,19 +105,19 @@ vector<GCodeParser::gtoken> GCodeParser::tokenize(string line) {
 
     if (GCodeParser::gtoken::integerType(type)) {
       tokens.emplace_back(type, std::stoi(number));
-      //cout << match <<" Integer as " << tokens.back().ival << std::endl;
+      // cout << match <<" Integer as " << tokens.back().ival << std::endl;
     } else if (GCodeParser::gtoken::floatType(type)) {
       tokens.emplace_back(type, std::stod(number));
-      //cout << match <<" Float " << tokens.back().fval << std::endl;
+      // cout << match <<" Float " << tokens.back().fval << std::endl;
     } else {
-      //cout << "ignored: " << match;
+      // cout << "ignored: " << match;
     }
   }
   return tokens;
 }
 
-GCodeParser::GCodeParser(std::string filename)
-    : filename(filename), pos(0), absolute(false), units(mm) {}
+GCodeParser::GCodeParser(std::string filename, QObject *parent)
+  : QThread(parent), filename(filename), pos(0,0,0), absolute(false), units(mm) {}
 
 void GCodeParser::run() {
   string line;
@@ -130,11 +127,4 @@ void GCodeParser::run() {
     auto tokens = tokenize(line);
     handleTokens(tokens);
   }
-}
-
-void GCodeParser::addObserver(SegmentObserver *so) { observers.push_back(so); }
-
-void GCodeParser::newSegment(Segment s) {
-  std::for_each(std::begin(observers), std::end(observers),
-                [s](const auto &o) { o->newSegment(s); });
 }
