@@ -33,6 +33,7 @@ void PathWindow::clear() {
   segments.clear();
   counts.clear();
   vertexCount = 0;
+  data.clear();
 }
 
 QSize PathWindow::minimumSizeHint() const { return QSize(50, 50); }

@@ -62,24 +62,25 @@ void GCodeParser::handleTokens(vector<gtoken> tokens) {
     case 'E':
       extruding = t.fval > 0;
       break;
+    default:
+      cout << "unknown type:" << t.type << endl;
     }
     //      cout << t << endl;
   }
-  if (nextPos != pos) {
-    pos = nextPos;
-    if (extruding) {
-      //      cout << nextPos.x() << ", " << nextPos.y() << ", " << nextPos.z()
-      //      <<
-      //      endl;
-      current << pos;
 
-    } else {
-      startNewSegment();
-    }
+  pos = nextPos;
+  if (extruding) {
+    cout << nextPos.x() << ", " << nextPos.y() << ", " << nextPos.z() << endl;
+    current << pos;
+
+  } else {
+    startNewSegment();
   }
 }
 // add another Segment iff the current is nonempty
 void GCodeParser::startNewSegment() {
+  if (current.isEmpty())
+    return;
   newSegment(current);
   current.clear();
 }
@@ -93,11 +94,15 @@ void removeComments(string &line) {
 vector<GCodeParser::gtoken> GCodeParser::tokenize(string line) {
   static regex ws_re("\\s+"); // whitespace
   vector<gtoken> tokens;
-  if (line.empty())
+  if (line.empty()) {
     return tokens;
+  }
 
   auto begin = sregex_token_iterator(line.begin(), line.end(), ws_re, -1);
   auto end = sregex_token_iterator();
+  if (begin == end) {
+    cout << "nothing on line:" << line << endl;
+  }
   for (auto it = begin; it != end; it++) {
     string match = *it;
     char type = match[0];
@@ -105,26 +110,32 @@ vector<GCodeParser::gtoken> GCodeParser::tokenize(string line) {
 
     if (GCodeParser::gtoken::integerType(type)) {
       tokens.emplace_back(type, std::stoi(number));
-      // cout << match <<" Integer as " << tokens.back().ival << std::endl;
+      // cout << match <<" Integer as " << tokens.back().number << std::endl;
     } else if (GCodeParser::gtoken::floatType(type)) {
       tokens.emplace_back(type, std::stod(number));
       // cout << match <<" Float " << tokens.back().fval << std::endl;
     } else {
-      // cout << "ignored: " << match;
+      cout << "ignored: " << match << endl;
     }
   }
   return tokens;
 }
 
 GCodeParser::GCodeParser(std::string filename, QObject *parent)
-  : QThread(parent), filename(filename), pos(0,0,0), absolute(false), units(mm) {}
+    : QThread(parent), filename(filename), pos(0, 0, 0), absolute(false),
+      units(mm) {}
 
 void GCodeParser::run() {
   string line;
   fstream fs(filename);
+  int lineCnt = 0;
   while (getline(fs, line)) {
     removeComments(line);
     auto tokens = tokenize(line);
     handleTokens(tokens);
+    lineCnt++;
+    if (0 == (lineCnt % 1000))
+      cout << "Read :" << lineCnt << " Lines" << endl;
   }
+  startNewSegment();
 }
