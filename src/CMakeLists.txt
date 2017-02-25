@@ -19,6 +19,8 @@ add_executable(
   MainWindow.h
   MainWindow.cpp
 
+  Sketcher.h
+  Sketcher.cpp
   )
 
 target_link_libraries(
@@ -31,3 +33,19 @@ target_link_libraries(
   Qt5::3DRender
   Qt5::3DInput
   )
+
+
+add_executable(
+  tester
+  test.cpp
+
+  GCodeParser.h
+  GCodeParser.cpp
+
+  )
+
+target_link_libraries(
+  tester
+  Qt5::Core
+  Qt5::Gui
+)
