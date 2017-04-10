@@ -28,10 +28,7 @@ target_link_libraries(
   Qt5::Core
   Qt5::Gui
   Qt5::Widgets
-  Qt5::3DCore
-  Qt5::3DExtras
-  Qt5::3DRender
-  Qt5::3DInput
+  Qt5::Svg
   )
 
 
@@ -41,11 +38,23 @@ add_executable(
 
   GCodeParser.h
   GCodeParser.cpp
-
   )
 
 target_link_libraries(
   tester
   Qt5::Core
   Qt5::Gui
+)
+
+
+add_executable(
+  BitBop
+  BitBop.cpp
+  )
+
+target_link_libraries(
+  BitBop
+  Qt5::Core
+  Qt5::Gui
+  Qt5::Widgets
 )

@@ -15,7 +15,7 @@ MainWindow::MainWindow() {
   setCentralWidget(pathWindow);
 
   toolBar = addToolBar(tr("Manage"));
-  auto startAction = new QAction(tr("Load gcode"));
+  auto startAction = new QAction(tr("Load gcode"), this);
   toolBar->addAction(startAction);
 
   resize(800, 800);

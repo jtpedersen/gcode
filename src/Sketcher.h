@@ -2,6 +2,8 @@
 #define SKETCHER_H_
 #include <QGraphicsView>
 
+class QGraphicsSvgItem;
+
 class Sketcher : public QGraphicsView {
   Q_OBJECT
 public:
@@ -9,6 +11,9 @@ public:
   virtual ~Sketcher();
 
   void loadFile(const QString &fileName);
+
+private:
+  QGraphicsSvgItem *sketchPath;
 };
 
 #endif /* !SKETCHER_H_ */
